@@ -1,29 +1,42 @@
 import throttle from 'lodash.throttle';
+import { common } from './common';
 
 const formRef = document.querySelector('.feedback-form');
-const FEEDBACK_FORM_STATE = 'feedback-form-state';
+const formDataObj =
+  JSON.parse(localStorage.getItem(common.FEEDBACK_FORM_STATE)) ?? {};
 
-const formData = JSON.parse(localStorage.getItem(FEEDBACK_FORM_STATE)) ?? {};
-
-Object.keys(formData).forEach(key => {
-  if (key) {
-    formRef.elements[key].value = formData[key];
-  }
-});
-
+modifyFormDataObj(formDataObj, 'readKeysToForm');
+formRef.addEventListener('submit', onSubmit);
 formRef.addEventListener('input', throttle(onInput, 500));
 
-function onInput({ target }) {
-  formData[target.name] = target.value;
-  localStorage.setItem(FEEDBACK_FORM_STATE, JSON.stringify(formData));
+function modifyFormDataObj(obj, action) {
+  const objKeys = Object.keys(obj);
+
+  if (!objKeys.length) {
+    return;
+  }
+
+  if (action === 'readKeysToForm') {
+    objKeys.forEach(key => {
+      formRef.elements[key].value = obj[key];
+    });
+  }
+
+  if (action === 'removeKeys') {
+    objKeys.forEach(key => delete obj[key]);
+  }
 }
 
-formRef.addEventListener('submit', onSubmit);
+function onInput({ target }) {
+  formDataObj[target.name] = target.value;
+  localStorage.setItem(common.FEEDBACK_FORM_STATE, JSON.stringify(formDataObj));
+}
 
 function onSubmit(evt) {
   evt.preventDefault();
-  console.log(formData);
-  Object.keys(formData).forEach(key => delete formData[key]);
+  console.log(formDataObj);
+
+  modifyFormDataObj(formDataObj, 'removeKeys');
   evt.target.reset();
-  localStorage.removeItem(FEEDBACK_FORM_STATE);
+  localStorage.removeItem(common.FEEDBACK_FORM_STATE);
 }

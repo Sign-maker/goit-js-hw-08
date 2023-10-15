@@ -25,5 +25,4 @@ const options = {
   captionsData: 'alt',
   captionDelay: 250,
 };
-
-const lightboxRef = new SimpleLightbox('.gallery a', options);
+new SimpleLightbox('.gallery a', options);
